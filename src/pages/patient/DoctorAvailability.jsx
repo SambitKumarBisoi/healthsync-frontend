@@ -5,12 +5,13 @@ import Spinner from "../../components/ui/Spinner";
 
 function DoctorAvailability() {
   const { doctorId } = useParams();
+
   const [availability, setAvailability] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchAvailability();
-  }, [doctorId]);
+  }, []);
 
   const fetchAvailability = async () => {
     try {
@@ -20,7 +21,7 @@ function DoctorAvailability() {
       );
       setAvailability(res.data.availability);
     } catch (error) {
-      console.error("Fetch availability error:", error.response?.data || error.message);
+      console.error("Availability fetch error:", error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
@@ -36,34 +37,35 @@ function DoctorAvailability() {
       {loading ? (
         <Spinner />
       ) : (
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {availability.length === 0 && (
-            <p className="text-gray-500">
-              No availability set yet.
-            </p>
+            <div className="bg-white p-6 rounded-xl2 shadow-card text-gray-500">
+              No availability found.
+            </div>
           )}
 
-          {availability.map((item) => (
+          {availability.map((slot) => (
             <div
-              key={item._id}
-              className="bg-white p-6 rounded-xl2 shadow-card hover:-translate-y-1 transition"
+              key={slot._id}
+              className="bg-white p-6 rounded-xl2 shadow-card hover:shadow-soft transition"
             >
-              <p className="font-semibold text-primary">
-                {item.dayOfWeek}
+              <h3 className="font-semibold text-primary">
+                {slot.dayOfWeek}
+              </h3>
+
+              <p className="text-sm text-gray-600 mt-2">
+                {slot.startTime} – {slot.endTime}
               </p>
-              <p className="text-sm text-gray-500 mt-1">
-                {item.startTime} - {item.endTime}
-              </p>
+
               <p className="text-xs text-gray-400 mt-1">
-                Slot Duration: {item.slotDuration} mins
+                Slot Duration: {slot.slotDuration} minutes
               </p>
             </div>
           ))}
 
         </div>
       )}
-
     </div>
   );
 }

@@ -20,6 +20,7 @@ import DoctorAvailability from "./pages/patient/DoctorAvailability";
 function App() {
   return (
     <Routes>
+
       {/* Public */}
       <Route path="/" element={<TestPage />} />
       <Route path="/register" element={<Register />} />
@@ -40,9 +41,16 @@ function App() {
         <Route path="/patient-dashboard" element={<PatientDashboard />} />
         <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+
         <Route path="/patient/doctors" element={<DoctorList />} />
-        <Route path="/patient/doctors/:doctorId" element={<DoctorAvailability />} />
+
+        {/* ✅ FIXED ROUTE */}
+        <Route 
+          path="/patient/doctor/:doctorId/availability" 
+          element={<DoctorAvailability />} 
+        />
       </Route>
+
     </Routes>
   );
 }
