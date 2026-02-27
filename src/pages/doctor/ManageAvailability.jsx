@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../../api/axiosInstance";
+import Toast from "../../components/Toast";
 
 function ManageAvailability() {
   const [availabilityList, setAvailabilityList] = useState([]);
+  const [toast, setToast] = useState(null);
+
   const [formData, setFormData] = useState({
     dayOfWeek: "",
     startTime: "",
@@ -35,34 +38,39 @@ function ManageAvailability() {
 
     try {
       await axiosInstance.post("/api/doctor/availability", formData);
+      setToast({ message: "Availability created successfully", type: "success" });
       fetchAvailability();
     } catch (error) {
-      console.error(error.response?.data || error.message);
+      setToast({
+        message:
+          error.response?.data?.message || "Failed to create availability",
+        type: "error",
+      });
     }
   };
 
-  // 🔴 Disable entire availability block
   const handleDisableBlock = async (id) => {
     try {
       await axiosInstance.patch(
         `/api/doctor/availability/${id}/disable`
       );
+      setToast({ message: "Availability disabled", type: "success" });
       fetchAvailability();
     } catch (error) {
-      console.error(error);
+      setToast({ message: "Failed to disable availability", type: "error" });
     }
   };
 
-  // 🟢 Disable specific slot
   const handleDisableSlot = async (availabilityId, slot) => {
     try {
       await axiosInstance.patch(
         `/api/doctor/availability/${availabilityId}/disable-slot`,
         { slot }
       );
+      setToast({ message: "Slot disabled", type: "success" });
       fetchAvailability();
     } catch (error) {
-      console.error(error);
+      setToast({ message: "Failed to disable slot", type: "error" });
     }
   };
 
@@ -135,9 +143,10 @@ function ManageAvailability() {
         {availabilityList.map((item) => (
           <div key={item._id} className="border p-4 rounded">
             <p className="font-semibold">{item.dayOfWeek}</p>
-            <p>{item.startTime} - {item.endTime}</p>
+            <p>
+              {item.startTime} - {item.endTime}
+            </p>
 
-            {/* 🟢 Slot Preview with individual disable */}
             <div className="mt-2 flex flex-wrap gap-2">
               {item.slots?.map((slot, index) => (
                 <div
@@ -157,7 +166,6 @@ function ManageAvailability() {
               ))}
             </div>
 
-            {/* 🔴 Disable entire block */}
             <button
               onClick={() => handleDisableBlock(item._id)}
               className="mt-3 text-red-600 text-sm"
@@ -167,6 +175,15 @@ function ManageAvailability() {
           </div>
         ))}
       </div>
+
+      {/* 🔔 Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
