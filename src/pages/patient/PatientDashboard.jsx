@@ -43,7 +43,7 @@ function PatientDashboard() {
           <ActionCard
             title="Appointment History"
             description="View past consultations and payment history."
-            onClick={() => {}}
+            onClick={() => navigate("/patient/appointments")}
           />
 
         </div>

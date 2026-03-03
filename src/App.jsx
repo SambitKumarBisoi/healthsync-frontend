@@ -13,22 +13,24 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 
 import PrivateRoute from "./routes/PrivateRoute";
 import DashboardLayout from "./layouts/DashboardLayout";
+
 import ManageAvailability from "./pages/doctor/ManageAvailability";
 import DoctorList from "./pages/patient/DoctorList";
 import DoctorAvailability from "./pages/patient/DoctorAvailability";
+import AppointmentHistory from "./pages/patient/AppointmentHistory";
+import DoctorQueue from "./pages/doctor/DoctorQueue";
 
 function App() {
   return (
     <Routes>
 
-      {/* Public */}
+      {/* Public Routes */}
       <Route path="/" element={<TestPage />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/verify-email/:token" element={<VerifyEmail />} />
-      <Route path="/doctor/manage-availability" element={<ManageAvailability />} />
 
       {/* Protected Layout */}
       <Route
@@ -38,17 +40,22 @@ function App() {
           </PrivateRoute>
         }
       >
+        {/* Patient */}
         <Route path="/patient-dashboard" element={<PatientDashboard />} />
-        <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-
+        <Route path="/patient/appointments" element={<AppointmentHistory />} />
         <Route path="/patient/doctors" element={<DoctorList />} />
-
-        {/* ✅ FIXED ROUTE */}
-        <Route 
-          path="/patient/doctor/:doctorId/availability" 
-          element={<DoctorAvailability />} 
+        <Route
+          path="/patient/doctor/:doctorId/availability"
+          element={<DoctorAvailability />}
         />
+
+        {/* Doctor */}
+        <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
+        <Route path="/doctor/manage-availability" element={<ManageAvailability />} />
+        <Route path="/doctor/queue" element={<DoctorQueue />} />
+
+        {/* Admin */}
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Route>
 
     </Routes>

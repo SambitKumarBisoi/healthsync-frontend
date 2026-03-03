@@ -1,102 +1,76 @@
-import { useContext } from "react";
-import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { useContext, useState } from "react";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { motion } from "framer-motion";
+import SidebarDrawer from "../components/SidebarDrawer";
 
 function DashboardLayout() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  const linkStyle = (path) =>
-    `p-3 rounded-xl2 transition duration-200 flex items-center
-     ${
-       location.pathname === path
-         ? "bg-blue-100 text-primary shadow-card"
-         : "hover:bg-blue-100 hover:translate-x-1"
-     }`;
-
   return (
-    <div className="flex min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-100">
 
-      {/* Sidebar */}
-      <div className="w-64 bg-sidebar border-r border-borderlight shadow-soft p-6">
+      {/* ===== HEADER ===== */}
+      <div className="sticky top-0 z-30 backdrop-blur-md bg-white/70 border-b border-gray-200 shadow-sm">
 
-        <h2 className="text-2xl font-bold text-primary mb-6">
-          HealthSync
-        </h2>
+        <div className="flex justify-between items-center px-10 py-4">
 
-        <p className="text-sm text-gray-500 mb-6">
-          {user?.role?.toUpperCase()}
-        </p>
+          <div className="flex items-center gap-4">
 
-        <nav className="flex flex-col gap-3 text-sm font-medium">
-
-          {user?.role === "patient" && (
-            <Link to="/patient-dashboard" className={linkStyle("/patient-dashboard")}>
-              Dashboard
-            </Link>
-          )}
-
-          {user?.role === "doctor" && (
-  <>
-    <Link to="/doctor-dashboard" className={linkStyle("/doctor-dashboard")}>
-      Dashboard
-    </Link>
-    <Link to="/doctor/manage-availability" className={linkStyle("/doctor/manage-availability")}>
-      Manage Availability
-    </Link>
-  </>
-)}
-
-          {user?.role === "admin" && (
-            <Link to="/admin-dashboard" className={linkStyle("/admin-dashboard")}>
-              Dashboard
-            </Link>
-          )}
-
-        </nav>
-      </div>
-
-      {/* Main Area */}
-      <div className="flex-1 p-10">
-
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8 bg-white/70 backdrop-blur-md p-4 rounded-xl2 shadow-card border border-borderlight">
-
-          <h1 className="text-xl font-semibold text-gray-700">
-            Welcome, {user?.name}
-          </h1>
-
-          <div className="flex gap-3">
-
+            {/* Hamburger */}
             <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-primary text-white rounded-xl2 shadow-card hover:scale-105 active:scale-95 transition"
+              onClick={() => setDrawerOpen(true)}
+              className="bg-white p-2 rounded-xl2 shadow-card hover:scale-105 transition"
             >
-              Logout
+              ☰
             </button>
+
+            <h2 className="text-lg font-semibold text-gray-700">
+              Welcome, {user?.name}
+            </h2>
 
           </div>
 
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-primary text-white rounded-xl2 shadow-card hover:scale-105 active:scale-95 transition"
+          >
+            Logout
+          </button>
+
         </div>
 
-        {/* Animated Content */}
+      </div>
+
+      {/* ===== CONTENT AREA ===== */}
+      <div className="px-10 py-8">
+
         <motion.div
           key={location.pathname}
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.35 }}
         >
           <Outlet />
         </motion.div>
 
       </div>
+
+      {/* ===== SIDEBAR ===== */}
+      <SidebarDrawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        role={user?.role}
+      />
+
     </div>
   );
 }
