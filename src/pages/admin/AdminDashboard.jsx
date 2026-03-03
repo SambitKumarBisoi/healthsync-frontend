@@ -28,8 +28,12 @@ ChartJS.register(
 
 function AdminDashboard() {
   const { user } = useContext(AuthContext);
+
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     fetchDashboardStats();
@@ -38,8 +42,16 @@ function AdminDashboard() {
   const fetchDashboardStats = async () => {
     try {
       setLoading(true);
-      const res = await axiosInstance.get("/api/admin/dashboard");
+
+      let url = "/api/admin/dashboard";
+
+      if (startDate && endDate) {
+        url += `?start=${startDate}&end=${endDate}`;
+      }
+
+      const res = await axiosInstance.get(url);
       setStats(res.data.data);
+
     } catch (error) {
       console.error(
         "Admin dashboard fetch error:",
@@ -108,9 +120,7 @@ function AdminDashboard() {
       transition={{ duration: 0.4 }}
     >
       {/* HEADER */}
-      <motion.div
-        className="bg-gradient-to-r from-blue-500 to-blue-400 text-white p-6 rounded-xl2 shadow-soft"
-      >
+      <motion.div className="bg-gradient-to-r from-blue-500 to-blue-400 text-white p-6 rounded-xl2 shadow-soft">
         <h2 className="text-2xl font-semibold">
           Welcome back, {user?.name}
         </h2>
@@ -119,7 +129,41 @@ function AdminDashboard() {
         </p>
       </motion.div>
 
-      {/* STATS CARDS WITH COUNT ANIMATION */}
+      {/* DATE FILTER */}
+      <motion.div
+        className="bg-white p-6 rounded-xl2 shadow-card flex flex-col md:flex-row gap-4 items-end"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div>
+          <label className="text-sm text-gray-500">Start Date</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border rounded px-3 py-2 block"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm text-gray-500">End Date</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="border rounded px-3 py-2 block"
+          />
+        </div>
+
+        <button
+          onClick={fetchDashboardStats}
+          className="bg-primary text-white px-4 py-2 rounded-xl2"
+        >
+          Apply Filter
+        </button>
+      </motion.div>
+
+      {/* STATS CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <StatCard title="Total Doctors" value={stats.doctors.total} />
         <StatCard title="Total Patients" value={stats.patients.total} />
