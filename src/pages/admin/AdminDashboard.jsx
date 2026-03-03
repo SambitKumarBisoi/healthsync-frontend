@@ -3,6 +3,7 @@ import { AuthContext } from "../../context/AuthContext";
 import axiosInstance from "../../api/axiosInstance";
 import { motion } from "framer-motion";
 import Spinner from "../../components/ui/Spinner";
+import CountUp from "react-countup";
 
 import {
   Chart as ChartJS,
@@ -70,7 +71,6 @@ function AdminDashboard() {
           stats.appointments.cancelled,
         ],
         backgroundColor: ["#10B981", "#F59E0B", "#EF4444"],
-        borderWidth: 1,
       },
     ],
   };
@@ -86,6 +86,16 @@ function AdminDashboard() {
           stats.doctors.suspended,
         ],
         backgroundColor: "#3B82F6",
+      },
+    ],
+  };
+
+  const patientPieData = {
+    labels: ["Total Patients"],
+    datasets: [
+      {
+        data: [stats.patients.total],
+        backgroundColor: ["#8B5CF6"],
       },
     ],
   };
@@ -109,7 +119,7 @@ function AdminDashboard() {
         </p>
       </motion.div>
 
-      {/* STATS CARDS */}
+      {/* STATS CARDS WITH COUNT ANIMATION */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <StatCard title="Total Doctors" value={stats.doctors.total} />
         <StatCard title="Total Patients" value={stats.patients.total} />
@@ -118,21 +128,19 @@ function AdminDashboard() {
       </div>
 
       {/* CHART SECTION */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-        <div className="bg-white p-6 rounded-xl2 shadow-card">
-          <h3 className="text-lg font-semibold text-primary mb-4">
-            Appointment Status Distribution
-          </h3>
+        <ChartCard title="Appointment Status">
           <Pie data={appointmentPieData} />
-        </div>
+        </ChartCard>
 
-        <div className="bg-white p-6 rounded-xl2 shadow-card">
-          <h3 className="text-lg font-semibold text-primary mb-4">
-            Doctor Account Status
-          </h3>
+        <ChartCard title="Doctor Account Status">
           <Bar data={doctorBarData} />
-        </div>
+        </ChartCard>
+
+        <ChartCard title="Patient Overview">
+          <Pie data={patientPieData} />
+        </ChartCard>
 
       </div>
     </motion.div>
@@ -141,10 +149,31 @@ function AdminDashboard() {
 
 function StatCard({ title, value }) {
   return (
-    <div className="bg-white p-6 rounded-xl2 shadow-card hover:-translate-y-1 transition">
+    <motion.div
+      className="bg-white p-6 rounded-xl2 shadow-card hover:-translate-y-1 transition"
+      whileHover={{ scale: 1.03 }}
+    >
       <h3 className="text-gray-500 text-sm">{title}</h3>
-      <p className="text-3xl font-bold text-primary mt-2">{value}</p>
-    </div>
+      <p className="text-3xl font-bold text-primary mt-2">
+        <CountUp end={value} duration={1.5} />
+      </p>
+    </motion.div>
+  );
+}
+
+function ChartCard({ title, children }) {
+  return (
+    <motion.div
+      className="bg-white p-6 rounded-xl2 shadow-card"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
+    >
+      <h3 className="text-lg font-semibold text-primary mb-4">
+        {title}
+      </h3>
+      {children}
+    </motion.div>
   );
 }
 
