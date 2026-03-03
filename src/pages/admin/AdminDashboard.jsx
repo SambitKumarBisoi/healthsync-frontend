@@ -4,6 +4,27 @@ import axiosInstance from "../../api/axiosInstance";
 import { motion } from "framer-motion";
 import Spinner from "../../components/ui/Spinner";
 
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+} from "chart.js";
+
+import { Pie, Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement
+);
+
 function AdminDashboard() {
   const { user } = useContext(AuthContext);
   const [stats, setStats] = useState(null);
@@ -28,18 +49,57 @@ function AdminDashboard() {
     }
   };
 
+  if (loading) return <Spinner />;
+
+  if (!stats)
+    return (
+      <div className="bg-white p-6 rounded-xl2 shadow-card">
+        No data available.
+      </div>
+    );
+
+  /* ================= CHART DATA ================= */
+
+  const appointmentPieData = {
+    labels: ["Completed", "Pending", "Cancelled"],
+    datasets: [
+      {
+        data: [
+          stats.appointments.completed,
+          stats.appointments.pending,
+          stats.appointments.cancelled,
+        ],
+        backgroundColor: ["#10B981", "#F59E0B", "#EF4444"],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const doctorBarData = {
+    labels: ["Active", "Pending", "Suspended"],
+    datasets: [
+      {
+        label: "Doctors",
+        data: [
+          stats.doctors.active,
+          stats.doctors.pending,
+          stats.doctors.suspended,
+        ],
+        backgroundColor: "#3B82F6",
+      },
+    ],
+  };
+
   return (
     <motion.div
-      className="space-y-8"
+      className="space-y-10"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
+      {/* HEADER */}
       <motion.div
         className="bg-gradient-to-r from-blue-500 to-blue-400 text-white p-6 rounded-xl2 shadow-soft"
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1 }}
       >
         <h2 className="text-2xl font-semibold">
           Welcome back, {user?.name}
@@ -49,65 +109,42 @@ function AdminDashboard() {
         </p>
       </motion.div>
 
-      {loading ? (
-        <Spinner />
-      ) : stats ? (
-        <>
-          {/* ===== DOCTOR STATS ===== */}
-          <SectionTitle title="Doctor Overview" />
+      {/* STATS CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <StatCard title="Total Doctors" value={stats.doctors.total} />
+        <StatCard title="Total Patients" value={stats.patients.total} />
+        <StatCard title="Total Appointments" value={stats.appointments.total} />
+        <StatCard title="Today's Appointments" value={stats.appointments.today} />
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard title="Total Doctors" value={stats.doctors.total} delay={0.2} />
-            <StatCard title="Active Doctors" value={stats.doctors.active} delay={0.3} />
-            <StatCard title="Pending Doctors" value={stats.doctors.pending} delay={0.4} />
-            <StatCard title="Suspended Doctors" value={stats.doctors.suspended} delay={0.5} />
-          </div>
+      {/* CHART SECTION */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-          {/* ===== PATIENT STATS ===== */}
-          <SectionTitle title="Patient Overview" />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StatCard title="Total Patients" value={stats.patients.total} delay={0.6} />
-          </div>
-
-          {/* ===== APPOINTMENT STATS ===== */}
-          <SectionTitle title="Appointment Overview" />
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard title="Total Appointments" value={stats.appointments.total} delay={0.7} />
-            <StatCard title="Today's Appointments" value={stats.appointments.today} delay={0.8} />
-            <StatCard title="Completed" value={stats.appointments.completed} delay={0.9} />
-            <StatCard title="Pending" value={stats.appointments.pending} delay={1.0} />
-          </div>
-        </>
-      ) : (
-        <div className="bg-white p-6 rounded-xl2 shadow-card text-gray-500">
-          No data available.
+        <div className="bg-white p-6 rounded-xl2 shadow-card">
+          <h3 className="text-lg font-semibold text-primary mb-4">
+            Appointment Status Distribution
+          </h3>
+          <Pie data={appointmentPieData} />
         </div>
-      )}
+
+        <div className="bg-white p-6 rounded-xl2 shadow-card">
+          <h3 className="text-lg font-semibold text-primary mb-4">
+            Doctor Account Status
+          </h3>
+          <Bar data={doctorBarData} />
+        </div>
+
+      </div>
     </motion.div>
   );
 }
 
-function SectionTitle({ title }) {
+function StatCard({ title, value }) {
   return (
-    <h3 className="text-lg font-semibold text-primary mt-4">
-      {title}
-    </h3>
-  );
-}
-
-function StatCard({ title, value, delay }) {
-  return (
-    <motion.div
-      className="bg-white p-6 rounded-xl2 shadow-card hover:-translate-y-1 transition"
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-    >
+    <div className="bg-white p-6 rounded-xl2 shadow-card hover:-translate-y-1 transition">
       <h3 className="text-gray-500 text-sm">{title}</h3>
       <p className="text-3xl font-bold text-primary mt-2">{value}</p>
-    </motion.div>
+    </div>
   );
 }
 
