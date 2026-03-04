@@ -4,6 +4,7 @@ import axiosInstance from "../../api/axiosInstance";
 import { motion } from "framer-motion";
 import Spinner from "../../components/ui/Spinner";
 import CountUp from "react-countup";
+import { io } from "socket.io-client";
 
 import {
   Chart as ChartJS,
@@ -27,6 +28,7 @@ ChartJS.register(
 );
 
 function AdminDashboard() {
+
   const { user } = useContext(AuthContext);
 
   const [stats, setStats] = useState(null);
@@ -35,12 +37,11 @@ function AdminDashboard() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  useEffect(() => {
-    fetchDashboardStats();
-  }, []);
+  /* ================= FETCH DASHBOARD DATA ================= */
 
   const fetchDashboardStats = async () => {
     try {
+
       setLoading(true);
 
       let url = "/api/admin/dashboard";
@@ -50,17 +51,51 @@ function AdminDashboard() {
       }
 
       const res = await axiosInstance.get(url);
+
       setStats(res.data.data);
 
     } catch (error) {
+
       console.error(
         "Admin dashboard fetch error:",
         error.response?.data || error.message
       );
+
     } finally {
+
       setLoading(false);
+
     }
   };
+
+  /* ================= INITIAL LOAD ================= */
+
+  useEffect(() => {
+
+    fetchDashboardStats();
+
+  }, []);
+
+  /* ================= SOCKET REALTIME ================= */
+
+  useEffect(() => {
+
+    const socket = io(
+      "https://healthsync-backend-production.onrender.com"
+    );
+
+    socket.on("connect", () => {
+      console.log("Admin socket connected");
+    });
+
+    socket.on("adminDashboardUpdate", () => {
+      console.log("Realtime dashboard update received");
+      fetchDashboardStats();
+    });
+
+    return () => socket.disconnect();
+
+  }, []);
 
   if (loading) return <Spinner />;
 
@@ -112,6 +147,20 @@ function AdminDashboard() {
     ],
   };
 
+  const revenueBarData = {
+    labels: ["Total Revenue", "Today's Revenue"],
+    datasets: [
+      {
+        label: "Revenue (₹)",
+        data: [
+          stats.revenue?.total || 0,
+          stats.revenue?.today || 0,
+        ],
+        backgroundColor: "#10B981",
+      },
+    ],
+  };
+
   return (
     <motion.div
       className="space-y-10"
@@ -119,7 +168,9 @@ function AdminDashboard() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
+
       {/* HEADER */}
+
       <motion.div className="bg-gradient-to-r from-blue-500 to-blue-400 text-white p-6 rounded-xl2 shadow-soft">
         <h2 className="text-2xl font-semibold">
           Welcome back, {user?.name}
@@ -130,11 +181,9 @@ function AdminDashboard() {
       </motion.div>
 
       {/* DATE FILTER */}
-      <motion.div
-        className="bg-white p-6 rounded-xl2 shadow-card flex flex-col md:flex-row gap-4 items-end"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
+
+      <motion.div className="bg-white p-6 rounded-xl2 shadow-card flex flex-col md:flex-row gap-4 items-end">
+
         <div>
           <label className="text-sm text-gray-500">Start Date</label>
           <input
@@ -161,18 +210,25 @@ function AdminDashboard() {
         >
           Apply Filter
         </button>
+
       </motion.div>
 
-      {/* STATS CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* STATS */}
+
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+
         <StatCard title="Total Doctors" value={stats.doctors.total} />
         <StatCard title="Total Patients" value={stats.patients.total} />
         <StatCard title="Total Appointments" value={stats.appointments.total} />
         <StatCard title="Today's Appointments" value={stats.appointments.today} />
+        <StatCard title="Total Revenue (₹)" value={stats.revenue?.total || 0} />
+        <StatCard title="Today's Revenue (₹)" value={stats.revenue?.today || 0} />
+
       </div>
 
-      {/* CHART SECTION */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* CHARTS */}
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
 
         <ChartCard title="Appointment Status">
           <Pie data={appointmentPieData} />
@@ -186,26 +242,36 @@ function AdminDashboard() {
           <Pie data={patientPieData} />
         </ChartCard>
 
+        <ChartCard title="Revenue Overview">
+          <Bar data={revenueBarData} />
+        </ChartCard>
+
       </div>
+
     </motion.div>
   );
 }
 
 function StatCard({ title, value }) {
+
   return (
     <motion.div
       className="bg-white p-6 rounded-xl2 shadow-card hover:-translate-y-1 transition"
       whileHover={{ scale: 1.03 }}
     >
       <h3 className="text-gray-500 text-sm">{title}</h3>
+
       <p className="text-3xl font-bold text-primary mt-2">
         <CountUp end={value} duration={1.5} />
       </p>
+
     </motion.div>
   );
+
 }
 
 function ChartCard({ title, children }) {
+
   return (
     <motion.div
       className="bg-white p-6 rounded-xl2 shadow-card"
@@ -213,12 +279,16 @@ function ChartCard({ title, children }) {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4 }}
     >
+
       <h3 className="text-lg font-semibold text-primary mb-4">
         {title}
       </h3>
+
       {children}
+
     </motion.div>
   );
+
 }
 
 export default AdminDashboard;
