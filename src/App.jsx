@@ -19,6 +19,8 @@ import DoctorList from "./pages/patient/DoctorList";
 import DoctorAvailability from "./pages/patient/DoctorAvailability";
 import AppointmentHistory from "./pages/patient/AppointmentHistory";
 import DoctorQueue from "./pages/doctor/DoctorQueue";
+import ManageUsers from "./pages/admin/ManageUsers";
+
 
 function App() {
   return (
@@ -56,6 +58,9 @@ function App() {
 
         {/* Admin */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/manage-users" element={<ManageUsers />} />
+
+        
       </Route>
 
     </Routes>

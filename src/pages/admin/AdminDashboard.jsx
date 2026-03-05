@@ -68,6 +68,22 @@ function AdminDashboard() {
     }
   };
 
+  /* ================= SOCKET TEST FUNCTION ================= */
+
+  const triggerSocketTest = async () => {
+    try {
+
+      await axiosInstance.get("/api/admin/socket-test");
+
+      console.log("Socket test triggered");
+
+    } catch (error) {
+
+      console.error("Socket test failed:", error);
+
+    }
+  };
+
   /* ================= INITIAL LOAD ================= */
 
   useEffect(() => {
@@ -172,12 +188,24 @@ function AdminDashboard() {
       {/* HEADER */}
 
       <motion.div className="bg-gradient-to-r from-blue-500 to-blue-400 text-white p-6 rounded-xl2 shadow-soft">
+
         <h2 className="text-2xl font-semibold">
           Welcome back, {user?.name}
         </h2>
+
         <p className="text-sm mt-1 opacity-90">
           Admin Control Panel & System Analytics
         </p>
+
+        {/* QUICK SOCKET TEST BUTTON */}
+
+        <button
+          onClick={triggerSocketTest}
+          className="mt-4 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
+        >
+          Test Real-Time Update
+        </button>
+
       </motion.div>
 
       {/* DATE FILTER */}
